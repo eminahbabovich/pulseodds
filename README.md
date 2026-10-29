@@ -1,76 +1,44 @@
 # PulseOdds
 
-PulseOdds je full-stack sports analytics dashboard za pregled utakmica, forme ekipa i promjena kvota kroz čist, responsive interfejs.
+PulseOdds je moj full-stack projekat: dashboard za pregled sportskih utakmica, forme ekipa i promjena kvota. Frontend je u Reactu (Vite), a backend u Spring Bootu.
 
-Projekat povezuje React/Vite frontend sa Spring Boot REST API-jem. Backend koristi JPA, Flyway migracije i H2 bazu za lokalni razvoj, dok frontend nudi filtere, pretragu, detalje utakmice, market indikatore, lokalizaciju i Light/Dark mode.
+Napravio sam ga da vježbam povezivanje cijelog lanca, od baze preko REST API-ja do interfejsa koji se sam osvježava.
 
-> **Demo feed:** aplikacija trenutno koristi seedovane utakmice i simulirane promjene kvota. Feed je označen u interfejsu kao `DEMO FEED · SIMULIRANI PODACI`. Kvote se osvježavaju svakih pet sekundi radi demonstracije near real-time frontend/backend toka.
+> **Važno:** podaci su demo. Utakmice su seedovane pri pokretanju, a kvote se mijenjaju simulacijom. Zato u aplikaciji stoji oznaka `DEMO FEED · SIMULIRANI PODACI`. Ovo nije pravi sports data provider niti aplikacija za klađenje.
 
-## Preview
+## Šta aplikacija radi
 
-Dashboard je dizajniran sa fokusom na:
-
-- jasnu vizuelnu hijerarhiju i čitljiv layout
-- pregledan responsive prikaz za desktop, tablet i telefon
+- prikazuje utakmice i može ih filtrirati po statusu (sve, uživo, najava, završeno)
+- pretraga po nazivu ekipe ili lige
+- forma ekipa kroz posljednjih pet utakmica
+- klik na utakmicu otvara detalje: 1X2 kvote, njihova promjena u procentima i smjer promjene
+- kvote se osvježavaju svakih pet sekundi
 - bosanski i engleski jezik
 - Light/Dark mode
-- pregled statusa utakmica i forme ekipa
-- detaljan pregled 1X2 kvota i njihovih promjena
+- raspored se prilagođava desktopu, tabletu i telefonu
 
 ## Tehnologije
 
-**Frontend**
+**Frontend:** React 18, Vite, JavaScript (JSX), CSS custom properties, fontovi Plus Jakarta Sans i Inter.
 
-- React 18
-- Vite
-- JavaScript / JSX
-- CSS custom properties i responsive CSS
-- Plus Jakarta Sans i Inter
+**Backend:** Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Spring Security, Flyway, H2 za lokalni razvoj, podrška za PostgreSQL u produkciji, Swagger/OpenAPI.
 
-**Backend**
-
-- Java 21
-- Spring Boot 3
-- Spring Web
-- Spring Data JPA
-- Spring Security
-- Flyway
-- H2 za lokalni razvoj
-- PostgreSQL podrška za produkciju
-- Swagger / OpenAPI
-
-## Funkcionalnosti
-
-- pregled utakmica po statusu: sve, uživo, najava i završeno
-- pretraga po nazivu ekipe ili lige
-- prikaz forme posljednjih pet utakmica
-- odabir utakmice i pregled market indikatora
-- promjena kvota sa procentom i smjerom promjene
-- automatsko osvježavanje svakih pet sekundi
-- simulacija promjene kvota kroz Spring scheduler
-- Light/Dark mode
-- Bosanski/English language switcher
-- responsive dashboard layout
-- validacija API parametara i standardizovani error odgovori
-- Swagger dokumentacija
-- Flyway migracije
-- GitHub Actions workflow za GitHub Pages frontend deploy
-
-## Arhitektura
+## Kako je složeno
 
 ```text
 React + Vite frontend
-        │
-        │ /api proxy u developmentu
+        │  (u developmentu Vite proxy šalje /api na backend)
         ▼
 Spring Boot REST API
-        │
         ▼
 Spring Data JPA
-        │
         ▼
-H2 lokalno / PostgreSQL produkcijski
+H2 lokalno / PostgreSQL u produkciji
 ```
+
+Backend je podijeljen na controller, service, repository, DTO, model, config i exception slojeve. Promjenu kvota simulira Spring scheduler koji radi u pozadini.
+
+Frontend:
 
 ```text
 frontend/src/
@@ -89,154 +57,81 @@ frontend/src/
 └── styles.css
 ```
 
-Backend prati standardnu Spring Boot strukturu sa odvojenim controller, service, repository, DTO, model, config i exception slojevima.
+## Pokretanje
 
-## Pokretanje projekta
-
-### Preduvjeti
-
-- Java JDK 21 ili noviji
-- Node.js 18 ili noviji
-- npm
-
-```bat
-java -version
-node --version
-npm --version
-```
-
-### Windows helper
-
-`run-project.bat` pokreće backend i frontend u odvojenim prozorima.
-
-### Ručno pokretanje
+Treba ti Java JDK 21+, Node.js 18+ i npm.
 
 Backend:
 
 ```bat
-cd /d C:\Users\HP\Downloads\projektic\demo
+cd demo
 mvnw.cmd spring-boot:run
 ```
 
-Frontend, u drugom terminalu:
+Frontend (u drugom terminalu):
 
 ```bat
-cd /d C:\Users\HP\Downloads\projektic\frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-Lokalne adrese:
+Ako koristiš Windows, `run-project.bat` pokrene oba u odvojenim prozorima.
 
-- frontend: <http://localhost:5173>
-- backend: <http://localhost:8080>
-- API: <http://localhost:8080/api/matches>
-- Swagger: <http://localhost:8080/swagger-ui.html>
+Adrese:
 
-U development modu Vite prosljeđuje `/api` zahtjeve na Spring Boot backend.
+- frontend: http://localhost:5173
+- backend: http://localhost:8080
+- API: http://localhost:8080/api/matches
+- Swagger: http://localhost:8080/swagger-ui.html
 
-## Production build
+Production build frontenda:
 
 ```bat
-cd /d C:\Users\HP\Downloads\projektic\frontend
-npm install
+cd frontend
 npm run build
 npm run preview
 ```
-
-Build output se generiše u `frontend/dist/`.
 
 ## API
 
 | Method | Endpoint | Opis |
 |---|---|---|
-| `GET` | `/api/matches` | Lista utakmica sa trenutnim kvotama |
-| `GET` | `/api/matches/{id}` | Detalji utakmice i odds history |
-| `GET` | `/v3/api-docs` | OpenAPI JSON dokumentacija |
+| `GET` | `/api/matches` | lista utakmica s trenutnim kvotama |
+| `GET` | `/api/matches/{id}` | detalji utakmice i historija kvota |
+| `GET` | `/v3/api-docs` | OpenAPI JSON |
 | `GET` | `/swagger-ui.html` | Swagger UI |
 
-## Demo podaci i ograničenja
+API parametri se validiraju, a greške se vraćaju u istom, standardizovanom formatu.
 
-Lokalna verzija backend-a:
+## Ograničenja demo verzije
 
-- seeduje četiri demo utakmice pri pokretanju
-- koristi H2 in-memory bazu
-- simulira promjene kvota svakih pet sekundi
-- resetuje podatke nakon restarta aplikacije
-
-Ovo nije pravi sports data provider niti aplikacija za klađenje. Projekat je fokusiran na demonstraciju REST API integracije, modelovanja podataka, periodičnog backend procesa, responsive React interfejsa i prikaza promjenjivih podataka.
+- pri pokretanju se seeduju četiri utakmice
+- H2 je in-memory, pa se svi podaci resetuju kad restartujem aplikaciju
+- kvote su simulirane, ne dolaze ni od kakvog stvarnog izvora
 
 ## Deployment
 
-Frontend workflow se nalazi u `.github/workflows/deploy-frontend.yml` i automatski:
+Frontend se deploya na GitHub Pages preko workflow-a u `.github/workflows/deploy-frontend.yml`. On instalira dependencies, napravi build i objavi `frontend/dist`.
 
-1. instalira dependencies
-2. pravi production build
-3. uploaduje `frontend/dist`
-4. deploya frontend na GitHub Pages
-
-GitHub Pages hostuje samo statički frontend. Backend se može deployati odvojeno na Render, Railway, Fly.io ili sličan servis.
-
-Production API adresa se postavlja kroz:
+GitHub Pages hostuje samo statički sadržaj, pa backend ide posebno (Render, Railway, Fly.io ili slično). Adresa backenda se postavlja varijablom:
 
 ```text
 VITE_API_BASE_URL=https://tvoj-backend-url/api
 ```
 
-Lokalna konfiguracija koristi `frontend/.env.example` kao template:
+Lokalno kopiraj `frontend/.env.example` u `frontend/.env`. Na GitHubu se varijabla dodaje u Settings → Secrets and variables → Actions → Variables.
 
-```bat
-copy frontend\.env.example frontend\.env
-```
+## Šta želim dodati
 
-Za GitHub Actions vrijednost se može dodati kao repository variable pod:
-
-```text
-Settings → Secrets and variables → Actions → Variables
-```
-
-## GitHub
-
-Projekat koristi root `.gitignore` koji iz repozitorija isključuje:
-
-- `node_modules/`
-- `frontend/dist/`
-- `demo/target/`
-- `.env` fajlove
-- IDE i OS konfiguracione fajlove
-
-Prvi commit i push:
-
-```bat
-cd /d C:\Users\HP\Downloads\projektic
-git init
-git add .
-git commit -m "Initial PulseOdds portfolio project"
-git branch -M main
-git remote add origin https://github.com/USERNAME/pulseodds.git
-git push -u origin main
-```
-
-Naredne izmjene:
-
-```bat
-git add .
-git commit -m "Polish dashboard and documentation"
-git push
-```
-
-Nakon prvog push-a, GitHub Pages se aktivira kroz **Settings → Pages → GitHub Actions**.
-
-## Moguća naredna poboljšanja
-
-- integracija stvarnog sports data providera
-- PostgreSQL baza u produkciji
-- autentifikacija korisnika
-- watchlist i personalizovane notifikacije
+- pravi sports data provider umjesto simulacije
+- PostgreSQL u produkciji
+- prijava korisnika
+- watchlist i notifikacije
 - graf historije kvota
-- testovi za API i React komponente
-- javni deploy backend-a i live demo URL
+- testove za API i React komponente
+- javno objavljen backend i live demo
 
 ## Autor
 
-PulseOdds je samostalni portfolio projekat koji spaja frontend product design, React razvoj i Spring Boot backend inženjering u jednu cjelinu.
+Emin Ahbabović
